@@ -27,7 +27,7 @@ var auth = {
   key_file: "",
   tenancy: "",
   region: "",
-  compartmentId: ""
+  compartmentid: ""
 }
 
 let authKeys = Object.keys(auth)
@@ -37,46 +37,34 @@ function matchKey(keys, string){
 }
 
 let authLines = authFile.split("\n")
-// assign values to keys from file 
-for(let rowindex=0; rowindex < authLines.length; rowindex++) {
-  let row = authLines[rowindex]
-  console.log("row", row)
-  if(!row){
-    continue
-  }
+                .filter(row => row)
+                .map(line => line.toLowerCase())
 
-  try {
-  let thisKey = authKeys.reduce(key => {
-    if (row.startsWith(key)) {
-      return key
-    }
-    return ""
-  })
-  thisKey = thisKey.toString().replace(",","")
-  console.log("key ")
-  console.log(thisKey)
+authLines.forEach(function(line) {
+
+  let thisKey = authKeys.find(key => line.startsWith(key))
+
+  if (!thisKey) 
+    return
+
   let pattern = `${thisKey}=(.*)`
   console.log("Pattern " + pattern)
-  auth[thisKey] = row.match(pattern)[1]
-  console.log(auth[thisKey])
+  auth[thisKey] = line.match(pattern)[1]
+  console.log(auth[thisKey]) 
 
-  } catch (ex) {
-    console.log("pattern matching failed for row " + row)
-    console.error(ex)
-  }
+})
 
-}
+let privateKeyPath = auth.key_file.replace("~", homedir)
 
-console.log(auth)
+auth.privateKey = fs.readFileSync(privateKeyPath, 'ascii');
 
+oci.database.autonomousDatabase.list( 
+  auth, 
+  {compartmentId : auth.compartmentid}, 
+  function(data){
+    console.log(data[0].dbName);
+  });
 
-auth.privateKey = fs.readFileSync(auth.key_file, 'ascii');
-
-//var compartmentId = 'ocid1.tenancy.oc1..aaaaaaaa72nxc2if3h676gok2mo34fzstut6iztkdruls7hqwxdj6pysmmhq';
-//var AWDOCID = 'ocid1.autonomousdwdatabase.oc1.iad.abuwcljtbqogthz3o4zffd7tcddcfgl4edoi5ro2chquqk7ufslbgiwsywjq';
-
-//oci.database.autonomousDatabase.list( auth, { compartmentId : compartmentId}, function(data){console.log(data[0].dbName);});
-//oci.database.autonomousDataWarehouse.list( auth, { compartmentId: compartmentId }, function(data){console.log(data[0].dbName);});
 
 var ATPOCID = 'ocid1.autonomousdatabase.oc1.iad.abuwcljskistzoklbyg2wkmparvlfblisrdc6sjhcltqcqvfs777o4uutjcq';
 var tags = { "freeformTags" : {"chris": 123456, "xxx": "yyy", "zzz": "aaa" }};
