@@ -48,3 +48,21 @@ oci.databases.autonomousDatabase.update( auth,
 
 
 See the main.js for other examples of how to setup the auth an how to call the API.
+
+
+## Sample Scripts! 
+Here's the script name and the arguments: 
+```
+createAutonomousDatabase DBNAME DISPLAYNAME PASSWORD CPUCOUNT STORAGEINTBS
+deleteAutonomousDatabase DBOCID
+getAutonomousDatabase DBOCID
+listAutonomousDatabases - no arguments
+startAutonomousDatabase DBOCID
+stopAutonomousDatabase DBOCID
+backupAutonomousDatabase – is not included
+restoreAutonomousDatabase DBOCID time
+updateAutonomousDatabase CPUCount StorageInTBs DBOCID
+```
+
+
+

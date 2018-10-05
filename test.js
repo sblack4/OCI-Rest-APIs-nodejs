@@ -1,19 +1,76 @@
 var os = require( 'os' );
 var fs = require( 'fs' );
+const path = require('path')
 
 var oci = require( './oci' );
 
-var auth={
-    tenancyId : 'ocid1.tenancy.oc1..aaaaaaaahm47pxqwunxjqel6jhiuyodldss4z2tx4m24cfmyqys3zndfw3ta',
-    userId : 'ocid1.user.oc1..aaaaaaaakb5c25jsxn3xx6jdi5gfoqmtlyb6rwfhqmreucv76ubnofnbspna',
-    keyFingerprint : 'd0:77:11:66:7b:a8:90:c0:ef:c7:5c:79:9d:c6:f4:24',
-    RESTversion : '/20160918',
-    //RESTversion : '/20180115',
-    //RESTversion: '/20171215',
-    region: 'us-ashburn-1',
-    privateKeyPath: '/Users/clbeck/.oci/oci_api_key.pem'
-};
-auth.privateKey = fs.readFileSync(auth.privateKeyPath, 'ascii');
+const homedir = require('os').homedir();
+const OCI_PATH = path.join(homedir, ".oci")
+
+console.log(OCI_PATH)
+
+const ociDirExists = fs.existsSync(OCI_PATH)
+
+if (!ociDirExists) {
+  console.log("No OCI Dir, aborting")
+  process.exit(1)
+}
+
+
+const authFile = fs.readFileSync(OCI_PATH + "/config").toString()
+
+console.log("got authfile: \n", authFile)
+
+var auth = {
+  user: "",
+  fingerprint: "",
+  key_file: "",
+  tenancy: "",
+  region: "",
+  compartmentId: ""
+}
+
+let authKeys = Object.keys(auth)
+
+function matchKey(keys, string){
+  
+}
+
+let authLines = authFile.split("\n")
+// assign values to keys from file 
+for(let rowindex=0; rowindex < authLines.length; rowindex++) {
+  let row = authLines[rowindex]
+  console.log("row", row)
+  if(!row){
+    continue
+  }
+
+  try {
+  let thisKey = authKeys.reduce(key => {
+    if (row.startsWith(key)) {
+      return key
+    }
+    return ""
+  })
+  thisKey = thisKey.toString().replace(",","")
+  console.log("key ")
+  console.log(thisKey)
+  let pattern = `${thisKey}=(.*)`
+  console.log("Pattern " + pattern)
+  auth[thisKey] = row.match(pattern)[1]
+  console.log(auth[thisKey])
+
+  } catch (ex) {
+    console.log("pattern matching failed for row " + row)
+    console.error(ex)
+  }
+
+}
+
+console.log(auth)
+
+
+auth.privateKey = fs.readFileSync(auth.key_file, 'ascii');
 
 //var compartmentId = 'ocid1.tenancy.oc1..aaaaaaaa72nxc2if3h676gok2mo34fzstut6iztkdruls7hqwxdj6pysmmhq';
 //var AWDOCID = 'ocid1.autonomousdwdatabase.oc1.iad.abuwcljtbqogthz3o4zffd7tcddcfgl4edoi5ro2chquqk7ufslbgiwsywjq';
