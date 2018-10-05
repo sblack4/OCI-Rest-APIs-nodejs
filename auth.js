@@ -4,9 +4,21 @@ const fs = require( 'fs' );
 const path = require('path')
 const oci = require( './oci' );
 
-
+/**
+ * for parsing the OCI config file
+ * to generate an auth (example below)
+ *  auth={
+    tenancyId : "xxx.aaa.bbb",
+    userId : "user.123.456",
+    keyFingerprint : "a2:f4:45:ca:98"
+    RESTversion : '/20160918',
+    region : 'us-ashburn-1',
+    privateKey : // the text of the PEM key, not the name of the file
+  };
+ */
 class ConfigFile {
-    constructor(configPath="~/.oci/config", profile="DEFAULT") {
+    constructor(configPath="~/.oci/config", profile="DEFAULT", RESTversion="/20160918") {
+        this.RESTversion = RESTversion
         this.absPath = this.getAbsPath(configPath)
         this.auth = {
             user: "",
@@ -30,6 +42,10 @@ class ConfigFile {
         }
 
     }
+    /**
+     * 
+     * @param {string} filePath 
+     */
     getAbsPath(filePath) {
         return filePath.replace("~", os.homedir())
     }
@@ -61,6 +77,20 @@ class ConfigFile {
 
         return this
     }
+    getAuth(){
+        let authObj = {
+            tenancyId : this.auth.tenancy,
+            userId : this.auth.user,
+            keyFingerprint : this.auth.fingerprint,
+            RESTversion : this.RESTversion,
+            region : this.auth.region,
+            privateKey :this.privateKey
+          };
+        return authObj
+    }
+    getAuthJson(){
+        return JSON.stringify(this.getAuth())
+    }
 
 }
 
@@ -70,3 +100,6 @@ let configFile = new ConfigFile()
 console.log(configFile.auth)
 
 console.log(configFile.privateKey)
+
+
+console.log(configFile.getAuthJson())
